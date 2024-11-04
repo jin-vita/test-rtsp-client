@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         ivVideoImage.videoRotation = 180
         ivVideoImage.scaleX = -1f
-        ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
+        ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) ivVideoImage.stop()
