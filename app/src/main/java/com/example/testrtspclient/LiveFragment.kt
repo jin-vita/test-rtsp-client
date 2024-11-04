@@ -7,37 +7,23 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.alexvas.rtsp.codec.VideoDecodeThread
 import com.alexvas.rtsp.widget.RtspDataListener
 import com.alexvas.rtsp.widget.RtspImageView
 import com.alexvas.rtsp.widget.RtspStatusListener
 import com.alexvas.rtsp.widget.toHexString
 import com.example.testrtspclient.databinding.FragmentLiveBinding
-import java.util.Timer
 import kotlin.math.min
 
 class LiveFragment : Fragment() {
 
     private lateinit var binding: FragmentLiveBinding
-    private lateinit var liveViewModel: LiveViewModel
-
-    private var statisticsTimer: Timer? = null
 
     private val rtspDataListener = object : RtspDataListener {
-        override fun onRtspDataApplicationDataReceived(
-            data: ByteArray,
-            offset: Int,
-            length: Int,
-            timestamp: Long
-        ) {
+        override fun onRtspDataApplicationDataReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
             val numBytesDump = min(length, 25) // dump max 25 bytes
-            Log.i(
-                TAG,
-                "RTSP app data ($length bytes): ${data.toHexString(offset, offset + numBytesDump)}"
-            )
+            Log.i(TAG, "RTSP app data ($length bytes): ${data.toHexString(offset, offset + numBytesDump)}")
         }
     }
 
@@ -58,7 +44,6 @@ class LiveFragment : Fragment() {
                 bnStartStopImage.text = "Stop RTSP"
                 pbLoadingImage.visibility = View.GONE
             }
-            setKeepScreenOn(true)
         }
 
         override fun onRtspStatusDisconnecting() {
@@ -77,7 +62,6 @@ class LiveFragment : Fragment() {
                 vShutterImage.visibility = View.VISIBLE
                 pbLoadingImage.isEnabled = false
             }
-            setKeepScreenOn(false)
         }
 
         override fun onRtspStatusFailedUnauthorized() {
@@ -115,7 +99,6 @@ class LiveFragment : Fragment() {
     ): View {
         if (DEBUG) Log.v(TAG, "onCreateView()")
 
-        liveViewModel = ViewModelProvider(this)[LiveViewModel::class.java]
         binding = FragmentLiveBinding.inflate(inflater, container, false)
 
         binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
@@ -128,27 +111,17 @@ class LiveFragment : Fragment() {
         binding.bnStartStopImage.setOnClickListener {
             if (binding.ivVideoImage.isStarted()) {
                 binding.ivVideoImage.stop()
-                stopStatistics()
             } else {
-                val uri = Uri.parse(liveViewModel.rtspRequest.value)
+                val uri = Uri.parse("rtsp://192.168.8.131:1935")
                 binding.ivVideoImage.apply {
-                    init(
-                        uri,
-                        liveViewModel.rtspUsername.value,
-                        liveViewModel.rtspPassword.value,
-                        "rtsp-client-android"
-                    )
+                    init(uri, "", "", "rtsp-client-android")
                     debug = false
                     onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
                         override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
                             // TODO: You can send bitmap for processing
                         }
                     }
-                    start(
-                        requestVideo = true,
-                        requestAudio = false,
-                        requestApplication = false
-                    )
+                    start(requestVideo = true, requestAudio = false, requestApplication = false)
                 }
             }
         }
@@ -158,36 +131,10 @@ class LiveFragment : Fragment() {
     override fun onResume() {
         if (DEBUG) Log.v(TAG, "onResume()")
         super.onResume()
-        liveViewModel.loadParams(requireContext())
     }
 
     override fun onPause() {
         super.onPause()
-        liveViewModel.saveParams(requireContext())
-    }
-
-    private fun stopStatistics() {
-        if (DEBUG) Log.v(TAG, "stopStatistics()")
-        statisticsTimer?.apply {
-            Log.i(TAG, "Stop statistics")
-            cancel()
-        }
-        statisticsTimer = null
-    }
-
-    private fun setKeepScreenOn(enable: Boolean) {
-        if (DEBUG) Log.v(TAG, "setKeepScreenOn(enable=$enable)")
-        if (enable) {
-            activity?.apply {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                Log.i(TAG, "Enabled keep screen on")
-            }
-        } else {
-            activity?.apply {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                Log.i(TAG, "Disabled keep screen on")
-            }
-        }
     }
 
     companion object {
