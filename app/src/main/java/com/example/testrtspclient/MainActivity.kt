@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
             binding.apply {
                 tvStatusImage.text = "Error: $message"
                 pbLoadingImage.visibility = View.GONE
+                bnStartStopImage.performClick()
             }
         }
 
