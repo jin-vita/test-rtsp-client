@@ -7,12 +7,9 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.alexvas.rtsp.codec.VideoDecodeThread
-import com.alexvas.rtsp.widget.RtspDataListener
 import com.alexvas.rtsp.widget.RtspImageView
 import com.alexvas.rtsp.widget.RtspStatusListener
-import com.alexvas.rtsp.widget.toHexString
 import com.example.testrtspclient.databinding.ActivityMainBinding
-import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -56,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() = binding.apply {
         ivVideoImage.setStatusListener(rtspStatusImageListener)
-        ivVideoImage.setDataListener(rtspDataListener)
 
         ivVideoImage.videoRotation = 180
         ivVideoImage.scaleX = -1f
@@ -65,13 +61,6 @@ class MainActivity : AppCompatActivity() {
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) ivVideoImage.stop()
             else showVideo()
-        }
-    }
-
-    private val rtspDataListener = object : RtspDataListener {
-        override fun onRtspDataApplicationDataReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
-            val numBytesDump = min(length, 25) // dump max 25 bytes
-            Log.i(TAG, "RTSP app data ($length bytes): ${data.toHexString(offset, offset + numBytesDump)}")
         }
     }
 
