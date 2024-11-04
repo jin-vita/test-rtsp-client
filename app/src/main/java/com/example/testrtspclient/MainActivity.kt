@@ -54,8 +54,7 @@ class MainActivity : AppCompatActivity() {
     private fun initView() = binding.apply {
         ivVideoImage.setStatusListener(rtspStatusImageListener)
 
-        ivVideoImage.videoRotation = 180
-        ivVideoImage.scaleX = -1f
+        ivVideoImage.videoRotation = 270
         ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
         bnStartStopImage.setOnClickListener {
