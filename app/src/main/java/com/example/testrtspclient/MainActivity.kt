@@ -15,10 +15,12 @@ import com.example.testrtspclient.databinding.ActivityMainBinding
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
+    private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
         private const val DEBUG = true
+        private const val URL = "rtsp://192.168.8.131:1935"
     }
 
     override fun onResume() {
@@ -30,34 +32,39 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
-    private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
-        binding.ivVideoImage.setDataListener(rtspDataListener)
+        initView()
+        showVideo()
+    }
 
-        binding.ivVideoImage.videoRotation = 180
-        binding.ivVideoImage.scaleX = -1f
-        binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
-
-        binding.bnStartStopImage.setOnClickListener {
-            if (binding.ivVideoImage.isStarted()) {
-                binding.ivVideoImage.stop()
-            } else {
-                val uri = Uri.parse("rtsp://192.168.8.131:1935")
-                binding.ivVideoImage.apply {
-                    init(uri, "", "", "rtsp-client-android")
-                    debug = false
-                    onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
-                        override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
-                            // TODO: You can send bitmap for processing
-                        }
-                    }
-                    start(requestVideo = true, requestAudio = false, requestApplication = false)
+    private fun showVideo() {
+        val uri = Uri.parse(URL)
+        binding.ivVideoImage.apply {
+            init(uri, "", "", "")
+            debug = false
+            onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
+                override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
+                    // TODO: You can send bitmap for processing
                 }
             }
+            start(requestVideo = true, requestAudio = false, requestApplication = false)
+        }
+    }
+
+    private fun initView() = binding.apply {
+        ivVideoImage.setStatusListener(rtspStatusImageListener)
+        ivVideoImage.setDataListener(rtspDataListener)
+
+        ivVideoImage.videoRotation = 180
+        ivVideoImage.scaleX = -1f
+        ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
+
+        bnStartStopImage.setOnClickListener {
+            if (ivVideoImage.isStarted()) ivVideoImage.stop()
+            else showVideo()
         }
     }
 
