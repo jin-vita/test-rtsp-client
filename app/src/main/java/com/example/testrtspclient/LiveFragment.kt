@@ -4,11 +4,11 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.alexvas.rtsp.codec.VideoDecodeThread
 import com.alexvas.rtsp.widget.RtspDataListener
@@ -26,14 +26,22 @@ class LiveFragment : Fragment() {
 
     private var statisticsTimer: Timer? = null
 
-    private val rtspDataListener = object: RtspDataListener {
-        override fun onRtspDataApplicationDataReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
+    private val rtspDataListener = object : RtspDataListener {
+        override fun onRtspDataApplicationDataReceived(
+            data: ByteArray,
+            offset: Int,
+            length: Int,
+            timestamp: Long
+        ) {
             val numBytesDump = min(length, 25) // dump max 25 bytes
-            Log.i(TAG, "RTSP app data ($length bytes): ${data.toHexString(offset, offset + numBytesDump)}")
+            Log.i(
+                TAG,
+                "RTSP app data ($length bytes): ${data.toHexString(offset, offset + numBytesDump)}"
+            )
         }
     }
 
-    private val rtspStatusImageListener = object: RtspStatusListener {
+    private val rtspStatusImageListener = object : RtspStatusListener {
         override fun onRtspStatusConnecting() {
             if (DEBUG) Log.v(TAG, "onRtspStatusConnecting()")
             binding.apply {
@@ -100,61 +108,22 @@ class LiveFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         if (DEBUG) Log.v(TAG, "onCreateView()")
 
         liveViewModel = ViewModelProvider(this)[LiveViewModel::class.java]
         binding = FragmentLiveBinding.inflate(inflater, container, false)
 
-        binding.bnVideoDecoderGroup.check(binding.bnVideoDecoderHardware.id)
-
         binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
         binding.ivVideoImage.setDataListener(rtspDataListener)
 
-        liveViewModel.initEditTexts(
-            binding.llRtspParams.etRtspRequest,
-            binding.llRtspParams.etRtspUsername,
-            binding.llRtspParams.etRtspPassword
-        )
-
-        liveViewModel.rtspRequest.observe(viewLifecycleOwner) {
-            if (binding.llRtspParams.etRtspRequest.text.toString() != it)
-                binding.llRtspParams.etRtspRequest.setText(it)
-        }
-        liveViewModel.rtspUsername.observe(viewLifecycleOwner) {
-            if (binding.llRtspParams.etRtspUsername.text.toString() != it)
-                binding.llRtspParams.etRtspUsername.setText(it)
-        }
-        liveViewModel.rtspPassword.observe(viewLifecycleOwner) {
-            if (binding.llRtspParams.etRtspPassword.text.toString() != it)
-                binding.llRtspParams.etRtspPassword.setText(it)
-        }
-
-        binding.bnRotate0.setOnClickListener {
-            binding.ivVideoImage.videoRotation = 0
-        }
-
-        binding.bnRotate90.setOnClickListener {
-            binding.ivVideoImage.videoRotation = 90
-        }
-
-        binding.bnRotate180.setOnClickListener {
-            binding.ivVideoImage.videoRotation = 180
-        }
-
-        binding.bnRotate270.setOnClickListener {
-            binding.ivVideoImage.videoRotation = 270
-        }
-
-        binding.bnRotate0.performClick()
-
-        binding.bnVideoDecoderHardware.setOnClickListener {
-            binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
-        }
-
-        binding.bnVideoDecoderSoftware.setOnClickListener {
-            binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
-        }
+        binding.ivVideoImage.videoRotation = 180
+        binding.ivVideoImage.scaleX = -1f
+        binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
 
         binding.bnStartStopImage.setOnClickListener {
             if (binding.ivVideoImage.isStarted()) {
@@ -163,17 +132,22 @@ class LiveFragment : Fragment() {
             } else {
                 val uri = Uri.parse(liveViewModel.rtspRequest.value)
                 binding.ivVideoImage.apply {
-                    init(uri, liveViewModel.rtspUsername.value, liveViewModel.rtspPassword.value, "rtsp-client-android")
-                    debug = binding.llRtspParams.cbDebug.isChecked
+                    init(
+                        uri,
+                        liveViewModel.rtspUsername.value,
+                        liveViewModel.rtspPassword.value,
+                        "rtsp-client-android"
+                    )
+                    debug = false
                     onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
                         override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
                             // TODO: You can send bitmap for processing
                         }
                     }
                     start(
-                        requestVideo = binding.llRtspParams.cbVideo.isChecked,
-                        requestAudio = binding.llRtspParams.cbAudio.isChecked,
-                        requestApplication = binding.llRtspParams.cbApplication.isChecked
+                        requestVideo = true,
+                        requestAudio = false,
+                        requestApplication = false
                     )
                 }
             }
@@ -215,6 +189,7 @@ class LiveFragment : Fragment() {
             }
         }
     }
+
     companion object {
         private val TAG: String = LiveFragment::class.java.simpleName
         private const val DEBUG = true
