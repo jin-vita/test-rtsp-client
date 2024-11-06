@@ -34,10 +34,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initView()
-        showVideo()
+        startVideo()
     }
 
-    private fun showVideo() {
+    private fun startVideo() {
         val uri = Uri.parse(URL)
         binding.ivVideoImage.apply {
             init(uri, "", "", "")
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) ivVideoImage.stop()
-            else showVideo()
+            else startVideo()
         }
     }
 
