@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         override fun onRtspStatusConnecting() {
             if (DEBUG) Log.v(TAG, "onRtspStatusConnecting()")
             binding.apply {
-                tvStatusImage.text = "RTSP connecting"
+                tvStatusImage.text = buildString { append("RTSP connecting") }
                 pbLoadingImage.visibility = View.VISIBLE
                 vShutterImage.visibility = View.VISIBLE
             }
@@ -86,8 +86,8 @@ class MainActivity : AppCompatActivity() {
         override fun onRtspStatusConnected() {
             if (DEBUG) Log.v(TAG, "onRtspStatusConnected()")
             binding.apply {
-                tvStatusImage.text = "RTSP connected"
-                bnStartStopImage.text = "Stop RTSP"
+                tvStatusImage.text = buildString { append("RTSP connected") }
+                bnStartStopImage.text = buildString { append("Stop RTSP") }
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
@@ -96,15 +96,15 @@ class MainActivity : AppCompatActivity() {
         override fun onRtspStatusDisconnecting() {
             if (DEBUG) Log.v(TAG, "onRtspStatusDisconnecting()")
             binding.apply {
-                tvStatusImage.text = "RTSP disconnecting"
+                tvStatusImage.text = buildString { append("RTSP disconnecting") }
             }
         }
 
         override fun onRtspStatusDisconnected() {
             if (DEBUG) Log.v(TAG, "onRtspStatusDisconnected()")
             binding.apply {
-                tvStatusImage.text = "RTSP disconnected"
-                bnStartStopImage.text = "Start RTSP"
+                tvStatusImage.text = buildString { append("RTSP disconnected") }
+                bnStartStopImage.text = buildString { append("Start RTSP") }
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
                 vShutterImage.visibility = View.VISIBLE
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             if (DEBUG) Log.e(TAG, "onRtspStatusFailedUnauthorized()")
             onRtspStatusDisconnected()
             binding.apply {
-                tvStatusImage.text = "RTSP username or password invalid"
+                tvStatusImage.text = buildString { append("RTSP username or password invalid") }
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
@@ -126,8 +126,11 @@ class MainActivity : AppCompatActivity() {
             if (DEBUG) Log.e(TAG, "onRtspStatusFailed(message='$message')")
             onRtspStatusDisconnected()
             binding.apply {
-                tvStatusImage.text = "Error: $message"
-                bnStartStopImage.text = "Start RTSP"
+                tvStatusImage.text = buildString {
+                    append("Error: ")
+                    append(message)
+                }
+                bnStartStopImage.text = buildString { append("Start RTSP") }
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
