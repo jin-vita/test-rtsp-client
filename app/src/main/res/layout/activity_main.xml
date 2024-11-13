@@ -8,6 +8,51 @@
     android:keepScreenOn="true"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="rtsp://" />
+
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="200dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/ipInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:hint="RTSP IP"
+                android:inputType="textUri" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text=":1935" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
     <Button
         android:layout_marginTop="10dp"
         android:id="@+id/bnStartStopImage"
@@ -16,6 +61,10 @@
         android:layout_gravity="center"
         android:layout_marginBottom="10dp"
         android:text="Start" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
 
     <FrameLayout
         android:layout_width="400dp"
@@ -43,19 +92,14 @@
             android:id="@+id/pbLoadingImage" />
     </FrameLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_gravity="center"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvStatusImage"
-            android:gravity="end" />
-    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/tvStatusImage" />
 
 </LinearLayout>

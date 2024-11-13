@@ -17,7 +17,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
         private const val DEBUG = true
-        private const val URL = "rtsp://192.168.8.131:1935"
+
+        private const val IP = "192.168."
+//        private const val IP = "192.168.253.254"
+//        private const val IP = "116.3.234.56"
     }
 
     override fun onResume() {
@@ -34,11 +37,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initView()
-        startVideo()
+//        startVideo()
     }
 
     private fun startVideo() {
-        val uri = Uri.parse(URL)
+        val ip = binding.ipInput.text
+        if (ip.split(".").size != 4) {
+            toast("IP 입력 필수")
+            return
+        }
+        val url = "rtsp://$ip:1935"
+        val uri = Uri.parse(url)
         binding.ivVideoImage.apply {
             init(uri, "", "", "")
             debug = false
@@ -52,14 +61,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() = binding.apply {
-        ivVideoImage.setStatusListener(rtspStatusImageListener)
+        ipInput.setText(IP)
 
+        ivVideoImage.setStatusListener(rtspStatusImageListener)
         ivVideoImage.videoRotation = 270
         ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) ivVideoImage.stop()
             else startVideo()
+            it.isEnabled = false
         }
     }
 
@@ -78,6 +89,7 @@ class MainActivity : AppCompatActivity() {
             binding.apply {
                 tvStatusImage.text = "RTSP connected"
                 bnStartStopImage.text = "Stop RTSP"
+                bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
         }
@@ -94,6 +106,7 @@ class MainActivity : AppCompatActivity() {
             binding.apply {
                 tvStatusImage.text = "RTSP disconnected"
                 bnStartStopImage.text = "Start RTSP"
+                bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
                 vShutterImage.visibility = View.VISIBLE
                 pbLoadingImage.isEnabled = false
@@ -105,6 +118,7 @@ class MainActivity : AppCompatActivity() {
             onRtspStatusDisconnected()
             binding.apply {
                 tvStatusImage.text = "RTSP username or password invalid"
+                bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
         }
@@ -114,8 +128,9 @@ class MainActivity : AppCompatActivity() {
             onRtspStatusDisconnected()
             binding.apply {
                 tvStatusImage.text = "Error: $message"
+                bnStartStopImage.text = "Start RTSP"
+                bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
-                bnStartStopImage.performClick()
             }
         }
 
