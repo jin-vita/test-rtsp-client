@@ -37,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initView()
-//        startVideo()
     }
 
     private fun startVideo() {
@@ -64,8 +63,8 @@ class MainActivity : AppCompatActivity() {
         ipInput.setText(IP)
 
         ivVideoImage.setStatusListener(rtspStatusImageListener)
-        ivVideoImage.videoRotation = 270
         ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
+        ivVideoImage.videoRotation = 270
 
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) ivVideoImage.stop()
