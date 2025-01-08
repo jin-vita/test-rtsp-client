@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val handler by lazy { Handler(mainLooper) }
-    private val handlerTimeOut by lazy { Handler(mainLooper) }
 
     override fun onResume() {
         super.onResume()
@@ -39,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         if (DEBUG) Log.v(TAG, "onStop()")
         handler.removeMessages(0)
-        handlerTimeOut.removeMessages(0)
         stopVideo()
         super.onStop()
     }
@@ -53,9 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() = binding.apply {
         ipInput.setText(IP)
-
-        ivVideoImage.setStatusListener(rtspStatusImageListener)
-        ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
         bnStartStopImage.setOnClickListener {
             if (ivVideoImage.isStarted()) stopVideo()
@@ -125,14 +120,6 @@ class MainActivity : AppCompatActivity() {
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
             }
-
-            message?.apply {
-                handler.removeMessages(0)
-                handler.postDelayed({
-                    stopVideo()
-                    startVideo()
-                }, TIMEOUT_DURATION)
-            }
         }
 
         override fun onRtspFirstFrameRendered() {
@@ -145,6 +132,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun startVideo() {
         if (DEBUG) Log.e(TAG, "startVideo called.")
+
+        binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
+        binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
+
         var count = 0
         val ip = binding.ipInput.text.trim()
         if (ip.split(".").size != 4) {
@@ -164,33 +155,29 @@ class MainActivity : AppCompatActivity() {
                     if (count > 10000000) count = 1
                     if (count % 30 == 1) {
                         resetTimeout()
-                        if (count % 90 == 1)
+                        if (count % 120 == 1)
                         if (DEBUG) Log.e(TAG, "startVideo onRtspImageBitmapObtained called.")
                     }
                 }
             }
             start(requestVideo = true, requestAudio = false, requestApplication = false)
         }
+
+        resetTimeout()
     }
 
     private fun stopVideo() {
         if (DEBUG) Log.e(TAG, "stopVideo called.")
-        if (binding.ivVideoImage.isStarted()) {
-            handlerTimeOut.removeMessages(0)
-            binding.ivVideoImage.stop()
-        }
+        handler.removeMessages(0)
+        binding.ivVideoImage.stop()
     }
 
     private fun resetTimeout() {
-        if (binding.ivVideoImage.isStarted()) {
-            handlerTimeOut.removeMessages(0)
-            handlerTimeOut.postDelayed({
-                if (binding.ivVideoImage.isStarted()) {
-                    if (DEBUG) Log.e(TAG, "${TIMEOUT_DURATION / 1000}초 동안 비트맵 수신 없음")
-                    stopVideo()
-                    startVideo()
-                }
-            }, TIMEOUT_DURATION)
-        }
+        handler.removeMessages(0)
+        handler.postDelayed({
+            if (DEBUG) Log.e(TAG, "${TIMEOUT_DURATION / 1000}초 동안 비트맵 수신 없음")
+            stopVideo()
+            startVideo()
+        }, TIMEOUT_DURATION)
     }
 }
