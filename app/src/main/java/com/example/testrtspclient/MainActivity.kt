@@ -3,6 +3,7 @@ package com.example.testrtspclient
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -17,11 +18,13 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
         private const val DEBUG = true
+        private const val TIMEOUT_DURATION = 5000L
 
         private const val IP = "192.168."
-//        private const val IP = "192.168.253.254"
-//        private const val IP = "116.3.234.56"
     }
+
+    private val handler by lazy { Handler(mainLooper) }
+    private val handlerTimeOut by lazy { Handler(mainLooper) }
 
     override fun onResume() {
         if (DEBUG) Log.v(TAG, "onResume()")
@@ -52,10 +55,31 @@ class MainActivity : AppCompatActivity() {
             debug = false
             onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
                 override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
-                    // TODO: You can send bitmap for processing
+                    resetTimeout() // 비트맵이 수신될 때마다 타이머 리셋
                 }
             }
             start(requestVideo = true, requestAudio = false, requestApplication = false)
+        }
+    }
+
+    private fun stopVideo() {
+        if (DEBUG) Log.e(TAG, "stopVideo called.")
+        if (binding.ivVideoImage.isStarted()) {
+            handlerTimeOut.removeCallbacksAndMessages(0)
+            binding.ivVideoImage.stop()
+        }
+    }
+
+    private fun resetTimeout() {
+        if (binding.ivVideoImage.isStarted()) {
+            handlerTimeOut.removeCallbacksAndMessages(0)
+            handlerTimeOut.postDelayed({
+                if (binding.ivVideoImage.isStarted()) {
+                    if (DEBUG) Log.e(TAG, "${TIMEOUT_DURATION / 1000}초 동안 비트맵 수신 없음")
+                    stopVideo()
+                    startVideo()
+                }
+            }, TIMEOUT_DURATION)
         }
     }
 
@@ -133,6 +157,14 @@ class MainActivity : AppCompatActivity() {
                 bnStartStopImage.text = buildString { append("Start RTSP") }
                 bnStartStopImage.isEnabled = true
                 pbLoadingImage.visibility = View.GONE
+            }
+
+            message?.apply {
+                handler.removeCallbacksAndMessages(0)
+                handler.postDelayed({
+                    stopVideo()
+                    startVideo()
+                }, TIMEOUT_DURATION)
             }
         }
 
