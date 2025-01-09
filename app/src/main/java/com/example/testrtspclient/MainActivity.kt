@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         ipInput.setText(IP)
 
         bnStartStopImage.setOnClickListener {
-            if (rtspImageViewView?.isStarted() == true) stopVideo()
+            if (isRendered) stopVideo()
             else {
                 it.isEnabled = false
                 startVideo()
@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopVideo() {
         if (DEBUG) Log.e(TAG, "stopVideo called.")
         handler.removeMessages(0)
-        rtspImageViewView?.stop()
+        removeRtspImageView()
     }
 
     private fun resetTimeout() {
@@ -202,6 +202,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun removeRtspImageView() {
         rtspImageViewView?.let {
+            it.stop()
             binding.rtspLayout.removeView(it)
             rtspImageViewView = null
         }
