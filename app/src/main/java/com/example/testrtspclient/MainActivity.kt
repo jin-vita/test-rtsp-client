@@ -1,6 +1,5 @@
 package com.example.testrtspclient
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -8,7 +7,7 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.alexvas.rtsp.codec.VideoDecodeThread
-import com.alexvas.rtsp.widget.RtspImageView
+import com.alexvas.rtsp.widget.RtspDataListener
 import com.alexvas.rtsp.widget.RtspStatusListener
 import com.example.testrtspclient.databinding.ActivityMainBinding
 
@@ -25,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private val handler by lazy { Handler(mainLooper) }
     private var isRendered = false
+    private var count = 0
 
     override fun onResume() {
         super.onResume()
@@ -57,6 +57,18 @@ class MainActivity : AppCompatActivity() {
             else {
                 it.isEnabled = false
                 startVideo()
+            }
+        }
+    }
+
+    private val rtspDataListener = object : RtspDataListener {
+        override fun onRtspDataVideoNalUnitReceived(data: ByteArray, offset: Int, length: Int, timestamp: Long) {
+            count++
+            if (count > 10000000) count = 1
+            if (count % 10 == 1) {
+                if (isRendered) resetTimeout()
+                if (count % 40 == 1)
+                    if (DEBUG) Log.e(TAG, "rtspDataListener onRtspDataVideoNalUnitReceived(). isRendered: $isRendered")
             }
         }
     }
@@ -138,11 +150,7 @@ class MainActivity : AppCompatActivity() {
         if (DEBUG) Log.e(TAG, "startVideo called.")
 
         handler.removeMessages(0)
-        binding.ivVideoImage.stop()
-        binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
-        binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
-        var count = 0
         val ip = binding.ipInput.text.trim()
         if (ip.split(".").size != 4) {
             toast("IP 입력 필수")
@@ -152,20 +160,14 @@ class MainActivity : AppCompatActivity() {
 
         val url = "rtsp://$ip:1935"
         val uri = Uri.parse(url)
+
         binding.ivVideoImage.apply {
+            this.stop()
+            videoDecoderType = VideoDecodeThread.DecoderType.HARDWARE
+            setStatusListener(rtspStatusImageListener)
+            setDataListener(rtspDataListener)
             init(uri, "", "", "")
             debug = false
-            onRtspImageBitmapListener = object : RtspImageView.RtspImageBitmapListener {
-                override fun onRtspImageBitmapObtained(bitmap: Bitmap) {
-                    count++
-                    if (count > 10000000) count = 1
-                    if (count % 30 == 1) {
-                        if (isRendered) resetTimeout()
-                        if (count % 120 == 1)
-                            if (DEBUG) Log.e(TAG, "startVideo onRtspImageBitmapObtained called. isRendered: $isRendered")
-                    }
-                }
-            }
             start(requestVideo = true, requestAudio = false, requestApplication = false)
         }
 
