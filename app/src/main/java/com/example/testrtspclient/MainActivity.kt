@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val handler by lazy { Handler(mainLooper) }
+    private var isRendered = false
 
     override fun onResume() {
         super.onResume()
@@ -37,7 +38,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         if (DEBUG) Log.v(TAG, "onStop()")
-        handler.removeMessages(0)
         stopVideo()
         super.onStop()
     }
@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onRtspStatusDisconnected() {
             if (DEBUG) Log.v(TAG, "rtspStatusImageListener onRtspStatusDisconnected()")
+            isRendered = false
             binding.apply {
                 tvStatusImage.text = buildString { append("RTSP disconnected") }
                 bnStartStopImage.text = buildString { append("Start RTSP") }
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onRtspStatusFailedUnauthorized() {
             if (DEBUG) Log.e(TAG, "rtspStatusImageListener onRtspStatusFailedUnauthorized()")
+            isRendered = false
             binding.apply {
                 tvStatusImage.text = buildString { append("RTSP username or password invalid") }
                 bnStartStopImage.isEnabled = true
@@ -111,6 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onRtspStatusFailed(message: String?) {
             if (DEBUG) Log.e(TAG, "rtspStatusImageListener onRtspStatusFailed(message='$message')")
+            isRendered = false
             binding.apply {
                 tvStatusImage.text = buildString {
                     append("Error: ")
@@ -124,6 +127,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onRtspFirstFrameRendered() {
             if (DEBUG) Log.v(TAG, "rtspStatusImageListener onRtspFirstFrameRendered()")
+            isRendered = true
             binding.apply {
                 vShutterImage.visibility = View.GONE
             }
@@ -133,6 +137,8 @@ class MainActivity : AppCompatActivity() {
     private fun startVideo() {
         if (DEBUG) Log.e(TAG, "startVideo called.")
 
+        handler.removeMessages(0)
+        binding.ivVideoImage.stop()
         binding.ivVideoImage.setStatusListener(rtspStatusImageListener)
         binding.ivVideoImage.videoDecoderType = VideoDecodeThread.DecoderType.SOFTWARE
 
@@ -154,9 +160,9 @@ class MainActivity : AppCompatActivity() {
                     count++
                     if (count > 10000000) count = 1
                     if (count % 30 == 1) {
-                        resetTimeout()
+                        if (isRendered) resetTimeout()
                         if (count % 120 == 1)
-                        if (DEBUG) Log.e(TAG, "startVideo onRtspImageBitmapObtained called.")
+                            if (DEBUG) Log.e(TAG, "startVideo onRtspImageBitmapObtained called. isRendered: $isRendered")
                     }
                 }
             }
@@ -176,7 +182,6 @@ class MainActivity : AppCompatActivity() {
         handler.removeMessages(0)
         handler.postDelayed({
             if (DEBUG) Log.e(TAG, "${TIMEOUT_DURATION / 1000}초 동안 비트맵 수신 없음")
-            stopVideo()
             startVideo()
         }, TIMEOUT_DURATION)
     }
