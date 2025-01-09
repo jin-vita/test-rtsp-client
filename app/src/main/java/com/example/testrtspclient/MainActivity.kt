@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private val handler by lazy { Handler(mainLooper) }
     private var isRendered = false
-    private var rtspImageViewView: RtspImageView? = null
+    private var rtspImageView: RtspImageView? = null
 
     override fun onResume() {
         super.onResume()
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
         removeRtspImageView()
 
-        rtspImageViewView = RtspImageView(this).apply {
+        rtspImageView = RtspImageView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.rtspLayout.addView(rtspImageViewView)
+        binding.rtspLayout.addView(rtspImageView)
 
         resetTimeout()
     }
@@ -201,10 +201,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun removeRtspImageView() {
-        rtspImageViewView?.let {
+        rtspImageView?.let {
             it.stop()
             binding.rtspLayout.removeView(it)
-            rtspImageViewView = null
+            rtspImageView = null
         }
     }
 }
